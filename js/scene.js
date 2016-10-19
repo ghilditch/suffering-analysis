@@ -39,10 +39,13 @@ var human;
 var nHuman = 1;
 var sliders;
 
+// Simple mesh
+var simpleMesh;
+
 var ToRad = Math.PI / 180;
 
 function Go() {
-    
+
     advancedSetup();
 
     // geometrys
@@ -58,17 +61,8 @@ function Go() {
     mats['sbox'] = new THREE.MeshLambertMaterial( {  color: 0x383838, name:'sbox' } );
     mats['ground'] = new THREE.MeshLambertMaterial( { color: 0x3D4143 } );
 
-    // Load the JSON files and provide callback functions (modelToScene
-    var loader = new THREE.JSONLoader();
-    loader.load( "models/body.js", addBodyToScene );
-    loader.load( "models/upperArm.L.js", addupperArmLToScene );
-    loader.load( "models/upperArm.R.js", addupperArmRToScene );
-    loader.load( "models/lowerArm.L.js", addlowerArmLToScene );
-    loader.load( "models/lowerArm.R.js", addlowerArmRToScene );
-    loader.load( "models/upperLeg.L.js", addupperLegLToScene );
-    loader.load( "models/upperLeg.R.js", addupperLegRToScene );
-    loader.load( "models/lowerLeg.L.js", addlowerLegLToScene );
-    loader.load( "models/lowerLeg.R.js", addlowerLegRToScene );       
+    // load the simple mesh
+    loadSimpleMesh();
 
     container = document.getElementById("container");
     container.appendChild( renderer.domElement );
@@ -76,9 +70,32 @@ function Go() {
 
 };
 
+function simpleLoop() {
+    requestAnimationFrame( simpleLoop );
+
+    var mtx, mtx2;
+    mtx = new THREE.Matrix4();
+    var pos = new THREE.Vector3();
+    var quat = new THREE.Quaternion();
+
+    mtx.makeTranslation( 140, 20, 0);
+    mtx2 = new THREE.Matrix4();
+    mtx2.makeRotationY(90*ToRad);
+    mtx.multiply( mtx2 );
+    mtx2.makeRotationX(-33*ToRad);
+    mtx.multiply( mtx2 );
+
+    pos.setFromMatrixPosition( mtx );
+    quat.setFromRotationMatrix( mtx );
+    simpleMesh.bones[1].position.copy(pos);
+    simpleMesh.bones[1].quaternion.copy(quat);
+
+    renderer.render( scene, camera );
+}
+
 function loop() {
     requestAnimationFrame( loop );
-   
+
    var mtx, mtx2;
     var pos = new THREE.Vector3(), quat = new THREE.Quaternion();
 
@@ -131,10 +148,8 @@ function loop() {
                 mtx2 = new THREE.Matrix4();
                 mtx2.makeRotationX(10*ToRad);
                 mtx.multiply( mtx2 );
-            }      
-           
-            
-                      
+            }
+
             pos.setFromMatrixPosition( mtx );
             quat.setFromRotationMatrix( mtx );
 
@@ -142,13 +157,41 @@ function loop() {
             athelete[i].quaternion.copy(quat);
 
         }
-
-            
-
-            
     }
-   
+
     renderer.render( scene, camera );
+}
+
+function loadSimpleMesh(){
+  var loader = new THREE.JSONLoader();
+  loader.load( "models/anim.json", addSimplMeshToScene );
+}
+
+function addSimplMeshToScene ( geometry, materials ) {
+    var material = new THREE.MeshFaceMaterial(materials);
+    simpleMesh = new THREE.Mesh( geometry, material );
+    simpleMesh.scale.set(500,500,500);
+    //simpleMesh.matrixAutoUpdate = false;
+    // simpleMesh.rotation.set(new THREE.Vector3( 0, 0, Math.PI / 2));
+    //simpleMesh.rotation.y = Math.PI / 2;
+    //simpleMesh.rotation.x = Math.PI / 4;
+    scene.add( simpleMesh );
+    // start the simple loop
+    simpleLoop();
+};
+
+function loadAtheleteMeshes(){
+  // Load the JSON files and provide callback functions (modelToScene
+  var loader = new THREE.JSONLoader();
+  loader.load( "models/body.js", addBodyToScene );
+  loader.load( "models/upperArm.L.js", addupperArmLToScene );
+  loader.load( "models/upperArm.R.js", addupperArmRToScene );
+  loader.load( "models/lowerArm.L.js", addlowerArmLToScene );
+  loader.load( "models/lowerArm.R.js", addlowerArmRToScene );
+  loader.load( "models/upperLeg.L.js", addupperLegLToScene );
+  loader.load( "models/upperLeg.R.js", addupperLegRToScene );
+  loader.load( "models/lowerLeg.L.js", addlowerLegLToScene );
+  loader.load( "models/lowerLeg.R.js", addlowerLegRToScene );
 }
 
 function addMeshToScene(mesh){
@@ -334,7 +377,7 @@ function addOimoObjectToMesh(key, name, pos, size){
     var mesh, body;
     var pos = pos || [0, 0, 0];
     var size = size || [10, 10, 10];
-    
+
     body = new OIMO.Body({type:'box', name:name, size:size, pos:pos, move:true, noSleep:true, world:world, config:config});
 
     if(key == 'body'){
@@ -355,8 +398,8 @@ function addOimoObjectToMesh(key, name, pos, size){
         mesh = athelete[body_parts.upperArmR];
     }  else if(key == 'RightLowArm'){
         mesh = athelete[body_parts.lowerArmR];
-    } 
-    
+    }
+
     Hmeshs[name] = mesh;
     Hbodys[name] = body;
 }
@@ -377,13 +420,13 @@ function updateOimoPhysics() {
 
             mtx = new THREE.Matrix4();
             mtx.makeTranslation( bone.x, 400-bone.y, 400-bone.z+(i*120)-250);
-            
+
             mtx2 = new THREE.Matrix4();
-            
+
             mtx2.makeRotationY(90*ToRad);
             mtx.multiply( mtx2 );
-          
-            mtx2 = new THREE.Matrix4();    
+
+            mtx2 = new THREE.Matrix4();
             //mtx2.makeRotationX(15*ToRad);
             mtx2.makeRotationX(-bone.rotation+(90*ToRad));
             if (i == 0)
@@ -414,9 +457,9 @@ function gradTexture(color) {
     c.width = 16; c.height = 256;
     var gradient = ct.createLinearGradient(0,0,0,256);
     var i = color[0].length;
-    
-    while(i--){ 
-        gradient.addColorStop(color[0][i],color[1][i]); 
+
+    while(i--){
+        gradient.addColorStop(color[0][i],color[1][i]);
     }
 
     ct.fillStyle = gradient;
