@@ -1,0 +1,14 @@
+{
+  "name": "sandbox",
+  "version": "1.0.0",
+  "description": "test bed for 3D development",
+  "main": "index.html",
+   "scripts": {
+   "lite": "lite-server"
+  },
+  "author": "Glenn Hilditch",
+  "license": "ISC",
+  "devDependencies": {
+    "lite-server": "^2.2.2"
+  }
+}

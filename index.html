@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Sensor Replay</title>
+<meta name="Description" content="" />
+<meta name="Keywords"  content="" />
+<link rel="icon" href="favicon.ico" />
+<style>
+    * {  margin: 0; padding: 0; border: 0;}	
+    body{ background-color: #3D4143; overflow: hidden; color:#cccccc; font-family:Arial; font-size: 10px; text-shadow: 1px 1px #000000;}
+    button {padding:8px; border: 2px solid #72797D; cursor: pointer; background:linear-gradient(#72797D , #3D4143); color:#CCCCCC; -moz-border-radius: 16px; -webkit-border-radius: 16px; border-radius: 16px;}
+    button:hover{border: 2px solid #72797D; cursor: pointer; background: #11BBFF; color:#000000; font-weight: bold;}
+    #walk{ position: absolute; top: 20px; left: 5px; width:70px; }
+    #run{ position: absolute;  top: 20px; left: 80px; width:70px; }
+</style>
+</head>
+<body>
+  <script src="js/three.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/Human.js"></script><!-- @Author _ishibashijun - http://jsdo.it/_ishibashijun -->
+  <script src="js/slider.js"></script>
+  <script src="js/oimo.min.js"></script>
+
+  <div id='container'></div>
+  <button id="walk">Walk</button>
+  <button id="run">Run</button>
+
+</body>
+</html>
