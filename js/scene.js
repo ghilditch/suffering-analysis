@@ -93,6 +93,7 @@ function simpleLoop() {
     //mtx2.makeRotationY(90*ToRad);
     //mtx.multiply( mtx2 );
     var angle0 = Math.cos (loopCnt);// * ToRad;
+    var angle1 = Math.sin (loopCnt);
     loopCnt += .1;
     /*if (bAngle){
       angle0 = 90 * ToRad;
@@ -102,7 +103,7 @@ function simpleLoop() {
       bAngle = true;
     }*/
 
-    mtx2.makeRotationZ(angle0);
+    mtx2.makeRotationX(angle0);
     mtx.multiply( mtx2 );
 
     pos.setFromMatrixPosition( mtx );
@@ -115,10 +116,38 @@ function simpleLoop() {
 
     //helper.bones[16].position.copy(pos);
     //helper.bones[10].quaternion.copy(quat);
-    helper.bones[10].rotation.setFromRotationMatrix(mtx);
-    helper.update ();
+    var arm = getBone ('upper_arm.R');
+    var leg = getBone ('thigh.L');
+    if (arm != null){
+        arm.rotation.setFromRotationMatrix(mtx);
+        leg.rotation.setFromRotationMatrix(mtx);
+        helper.update ();
+    }
+
+    mtx2 = new THREE.Matrix4();
+    mtx.makeTranslation( 1, loc, 1);
+    mtx2.makeRotationX(angle1);
+    mtx.multiply( mtx2 );
+    arm = getBone ('upper_arm.L');
+    leg = getBone ('thigh.R');
+    if (arm != null){
+        arm.rotation.setFromRotationMatrix(mtx);
+        leg.rotation.setFromRotationMatrix(mtx);
+        helper.update ();
+    }
+
     renderer.render( scene, camera );
 }
+
+function getBone (name){
+    for (var i = 0, len = helper.bones.length; i < len; i++) {
+        if (helper.bones[i].name == name){ 
+            return helper.bones[i];
+        }
+    }
+    return null;
+}
+
 // Rotate an object around an arbitrary axis in object space
 var rotObjectMatrix;
 function rotateAroundObjectAxis(object, axis, radians) {
