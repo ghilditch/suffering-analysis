@@ -230,7 +230,8 @@ function loop() {
 
 function loadSimpleMesh(){
   var loader = new THREE.JSONLoader();
-  loader.load( "models/hand_rig.js", addSimplMeshToScene );
+  //loader.load( "models/hand_rig.js", addSimplMeshToScene );
+  loader.load( "models/athele_rig.json", addSimplMeshToScene );
 }
 
 function addSimplMeshToScene ( model, materials ) {
@@ -315,8 +316,8 @@ function advancedSetup(){
     scene = new THREE.Scene();
 
     //camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100 );
-    initCamera(90,60,80);
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
+    initCamera(0, -1,-5);
 
     // lights
     scene.add( new THREE.AmbientLight( 0x3D4143 ) );
