@@ -33,6 +33,7 @@ var Hmeshs = {};
 var Hbodys = {};
 var bodys = [];
 var meshs = [];
+var helper;
 
 // human
 var human;
@@ -69,7 +70,8 @@ function Go() {
     initEvents();
 
 };
-
+var loopCnt = 0;
+var bAngle = true;
 function simpleLoop() {
     requestAnimationFrame( simpleLoop );
 
@@ -80,16 +82,29 @@ function simpleLoop() {
 
     mtx.makeTranslation( 140, 20, 0);
     mtx2 = new THREE.Matrix4();
-    mtx2.makeRotationY(90*ToRad);
-    mtx.multiply( mtx2 );
-    mtx2.makeRotationX(-33*ToRad);
+    //mtx2.makeRotationY(90*ToRad);
+    //mtx.multiply( mtx2 );
+    var angle0 = Math.cos (loopCnt);// * ToRad;
+    loopCnt += .25;
+    /*if (bAngle){
+      angle0 = 90 * ToRad;
+      bAngle = false;
+    }else{
+      angle0 = 1 * ToRad;
+      bAngle = true;
+    }*/
+
+    mtx2.makeRotationZ(angle0);
     mtx.multiply( mtx2 );
 
     pos.setFromMatrixPosition( mtx );
     quat.setFromRotationMatrix( mtx );
-    simpleMesh.bones[1].position.copy(pos);
-    simpleMesh.bones[1].quaternion.copy(quat);
+    //simpleMesh.bones[0].position.copy(pos);
+    //simpleMesh.bones[0].quaternion.copy(quat);
 
+    //helper.bones[16].position.copy(pos);
+    helper.bones[16].quaternion.copy(quat);
+    helper.update ();
     renderer.render( scene, camera );
 }
 
@@ -164,20 +179,30 @@ function loop() {
 
 function loadSimpleMesh(){
   var loader = new THREE.JSONLoader();
-  loader.load( "models/anim.json", addSimplMeshToScene );
+  loader.load( "models/hand_rig.js", addSimplMeshToScene );
 }
 
-function addSimplMeshToScene ( geometry, materials ) {
-    var material = new THREE.MeshFaceMaterial(materials);
-    simpleMesh = new THREE.Mesh( geometry, material );
-    simpleMesh.scale.set(500,500,500);
-    //simpleMesh.matrixAutoUpdate = false;
-    // simpleMesh.rotation.set(new THREE.Vector3( 0, 0, Math.PI / 2));
-    //simpleMesh.rotation.y = Math.PI / 2;
-    //simpleMesh.rotation.x = Math.PI / 4;
-    scene.add( simpleMesh );
-    // start the simple loop
-    simpleLoop();
+function addSimplMeshToScene ( model, materials ) {
+  var material;
+
+  materials.forEach (function (mat){
+    mat.skinning = true;
+  });
+
+  simpleMesh = new THREE.SkinnedMesh(
+    model,
+    materials[0]
+  );
+  //simpleMesh.scale.set(50,50,50);
+  //simpleMesh.castShadow = true;
+  //simpleMesh.receiveShadow = true;
+  scene.add( simpleMesh );
+
+  helper = new THREE.SkeletonHelper(simpleMesh);
+  scene.add (helper);
+
+  // start the simple loop
+  simpleLoop();
 };
 
 function loadAtheleteMeshes(){
@@ -236,8 +261,9 @@ function advancedSetup(){
     // Setup a new scene
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
-    initCamera(90,60,800);
+    //camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100 );
+    initCamera(90,60,80);
 
     // lights
     scene.add( new THREE.AmbientLight( 0x3D4143 ) );
