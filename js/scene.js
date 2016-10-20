@@ -80,12 +80,20 @@ function simpleLoop() {
     var pos = new THREE.Vector3();
     var quat = new THREE.Quaternion();
 
-    mtx.makeTranslation( 140, 20, 0);
+    var loc = 1;
+    if (bAngle){
+      loc *= -1;
+      bAngle = false;
+    }else{
+      bAngle = true;
+    }
+
+    mtx.makeTranslation( 1, loc, 1);
     mtx2 = new THREE.Matrix4();
     //mtx2.makeRotationY(90*ToRad);
     //mtx.multiply( mtx2 );
     var angle0 = Math.cos (loopCnt);// * ToRad;
-    loopCnt += .25;
+    loopCnt += .1;
     /*if (bAngle){
       angle0 = 90 * ToRad;
       bAngle = false;
@@ -99,13 +107,56 @@ function simpleLoop() {
 
     pos.setFromMatrixPosition( mtx );
     quat.setFromRotationMatrix( mtx );
-    //simpleMesh.bones[0].position.copy(pos);
+    //simpleMesh.position.copy(pos);
     //simpleMesh.bones[0].quaternion.copy(quat);
 
+    //var xAxis = new THREE.Vector3(1,0,0);
+    //rotateAroundWorldAxis(mesh, xAxis, Math.PI / 180);
+
     //helper.bones[16].position.copy(pos);
-    helper.bones[16].quaternion.copy(quat);
+    //helper.bones[10].quaternion.copy(quat);
+    helper.bones[10].rotation.setFromRotationMatrix(mtx);
     helper.update ();
     renderer.render( scene, camera );
+}
+// Rotate an object around an arbitrary axis in object space
+var rotObjectMatrix;
+function rotateAroundObjectAxis(object, axis, radians) {
+    rotObjectMatrix = new THREE.Matrix4();
+    rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
+    // new code for Three.JS r55+:
+    object.matrix.multiply(rotObjectMatrix);
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js r50-r58:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // new code for Three.js r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
+}
+
+var rotWorldMatrix;
+// Rotate an object around an arbitrary axis in world space
+function rotateAroundWorldAxis(object, axis, radians) {
+    rotWorldMatrix = new THREE.Matrix4();
+    rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    //  rotWorldMatrix.multiply(object.matrix);
+    // new code for Three.JS r55+:
+    rotWorldMatrix.multiply(object.matrix);                // pre-multiply
+
+    object.matrix = rotWorldMatrix;
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js pre r59:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // code for r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
 }
 
 function loop() {
@@ -196,6 +247,8 @@ function addSimplMeshToScene ( model, materials ) {
   //simpleMesh.scale.set(50,50,50);
   //simpleMesh.castShadow = true;
   //simpleMesh.receiveShadow = true;
+  simpleMesh.rotation.x = 90 * ToRad;
+
   scene.add( simpleMesh );
 
   helper = new THREE.SkeletonHelper(simpleMesh);
