@@ -49,19 +49,6 @@ function Go() {
 
     advancedSetup();
 
-    // geometrys
-    geos['sphere'] = new THREE.BufferGeometry();
-    geos['sphere'].fromGeometry( new THREE.SphereGeometry( 1 , 20, 10 ) );
-    geos['box'] = new THREE.BufferGeometry();
-    geos['box'].fromGeometry( new THREE.BoxGeometry( 1, 1, 1 ) );
-
-    // materials
-    mats['sph'] = new THREE.MeshPhongMaterial( { color: 0x99999A, name:'sph' ,specular: 0xFFFFFF, shininess: 120, transparent: true, opacity: 0.9 } );
-    mats['box'] = new THREE.MeshLambertMaterial( {  color: 0xAA8058, name:'box' } );
-    mats['ssph'] = new THREE.MeshPhongMaterial( { color:  0x666667, name:'ssph', specular: 0xFFFFFF, shininess: 120 , transparent: true, opacity: 0.7} );
-    mats['sbox'] = new THREE.MeshLambertMaterial( {  color: 0x383838, name:'sbox' } );
-    mats['ground'] = new THREE.MeshLambertMaterial( { color: 0x3D4143 } );
-
     // load the simple mesh
     loadSimpleMesh();
 
@@ -70,189 +57,21 @@ function Go() {
     initEvents();
 
 };
+
 var loopCnt = 0;
 var bAngle = true;
+var radius = 2, theta = 0;
+
 function simpleLoop() {
     requestAnimationFrame( simpleLoop );
+    // MoveHim();
 
-    var mtx, mtx2;
-    mtx = new THREE.Matrix4();
-    var pos = new THREE.Vector3();
-    var quat = new THREE.Quaternion();
+    theta += 0.1;
 
-    var loc = 1;
-    if (bAngle){
-      loc *= -1;
-      bAngle = false;
-    }else{
-      bAngle = true;
-    }
-
-    mtx.makeTranslation( 1, loc, 1);
-    mtx2 = new THREE.Matrix4();
-    //mtx2.makeRotationY(90*ToRad);
-    //mtx.multiply( mtx2 );
-    var angle0 = Math.cos (loopCnt);// * ToRad;
-    var angle1 = Math.sin (loopCnt);
-    loopCnt += .1;
-    /*if (bAngle){
-      angle0 = 90 * ToRad;
-      bAngle = false;
-    }else{
-      angle0 = 1 * ToRad;
-      bAngle = true;
-    }*/
-
-    mtx2.makeRotationX(angle0);
-    mtx.multiply( mtx2 );
-
-    pos.setFromMatrixPosition( mtx );
-    quat.setFromRotationMatrix( mtx );
-    //simpleMesh.position.copy(pos);
-    //simpleMesh.bones[0].quaternion.copy(quat);
-
-    //var xAxis = new THREE.Vector3(1,0,0);
-    //rotateAroundWorldAxis(mesh, xAxis, Math.PI / 180);
-
-    //helper.bones[16].position.copy(pos);
-    //helper.bones[10].quaternion.copy(quat);
-    var arm = getBone ('upper_arm.R');
-    var leg = getBone ('thigh.L');
-    if (arm != null){
-        arm.rotation.setFromRotationMatrix(mtx);
-        leg.rotation.setFromRotationMatrix(mtx);
-        helper.update ();
-    }
-
-    mtx2 = new THREE.Matrix4();
-    mtx.makeTranslation( 1, loc, 1);
-    mtx2.makeRotationX(angle1);
-    mtx.multiply( mtx2 );
-    arm = getBone ('upper_arm.L');
-    leg = getBone ('thigh.R');
-    if (arm != null){
-        arm.rotation.setFromRotationMatrix(mtx);
-        leg.rotation.setFromRotationMatrix(mtx);
-        helper.update ();
-    }
-
-    renderer.render( scene, camera );
-}
-
-function getBone (name){
-    for (var i = 0, len = helper.bones.length; i < len; i++) {
-        if (helper.bones[i].name == name){ 
-            return helper.bones[i];
-        }
-    }
-    return null;
-}
-
-// Rotate an object around an arbitrary axis in object space
-var rotObjectMatrix;
-function rotateAroundObjectAxis(object, axis, radians) {
-    rotObjectMatrix = new THREE.Matrix4();
-    rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
-
-    // old code for Three.JS pre r54:
-    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
-    // new code for Three.JS r55+:
-    object.matrix.multiply(rotObjectMatrix);
-
-    // old code for Three.js pre r49:
-    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
-    // old code for Three.js r50-r58:
-    // object.rotation.setEulerFromRotationMatrix(object.matrix);
-    // new code for Three.js r59+:
-    object.rotation.setFromRotationMatrix(object.matrix);
-}
-
-var rotWorldMatrix;
-// Rotate an object around an arbitrary axis in world space
-function rotateAroundWorldAxis(object, axis, radians) {
-    rotWorldMatrix = new THREE.Matrix4();
-    rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
-
-    // old code for Three.JS pre r54:
-    //  rotWorldMatrix.multiply(object.matrix);
-    // new code for Three.JS r55+:
-    rotWorldMatrix.multiply(object.matrix);                // pre-multiply
-
-    object.matrix = rotWorldMatrix;
-
-    // old code for Three.js pre r49:
-    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
-    // old code for Three.js pre r59:
-    // object.rotation.setEulerFromRotationMatrix(object.matrix);
-    // code for r59+:
-    object.rotation.setFromRotationMatrix(object.matrix);
-}
-
-function loop() {
-    requestAnimationFrame( loop );
-
-   var mtx, mtx2;
-    var pos = new THREE.Vector3(), quat = new THREE.Quaternion();
-
-    if( body_part_cnt == total_body_parts ){
-        for (var i = 0; i < body_part_cnt; i++){
-            mtx = new THREE.Matrix4();
-
-            if (i == body_parts.upperLegR){
-                mtx.makeTranslation( 140, 20, 0);
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationY(90*ToRad);
-                mtx.multiply( mtx2 );
-
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationX(-33*ToRad);
-                mtx.multiply( mtx2 );
-            }else if(i == body_parts.lowerLegR){
-                mtx.makeTranslation( 15, 5, 0);
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationY(90*ToRad);
-                mtx.multiply( mtx2 );
-
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationX(30*ToRad);
-                mtx.multiply( mtx2 );
-            }else if(i == body_parts.lowerArmR){
-                mtx.makeTranslation( 15, 5, 0);
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationY(90*ToRad);
-                mtx.multiply( mtx2 );
-
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationX(-180*ToRad);
-                mtx.multiply( mtx2 );
-            }else if(i == body_parts.upperArmR){
-                mtx.makeTranslation( 15, 5, 0);
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationY(90*ToRad);
-                mtx.multiply( mtx2 );
-
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationX(-180*ToRad);
-                mtx.multiply( mtx2 );
-            }else{
-                mtx.makeTranslation( 0, 0, 0);
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationY(90*ToRad);
-                mtx.multiply( mtx2 );
-
-                mtx2 = new THREE.Matrix4();
-                mtx2.makeRotationX(10*ToRad);
-                mtx.multiply( mtx2 );
-            }
-
-            pos.setFromMatrixPosition( mtx );
-            quat.setFromRotationMatrix( mtx );
-
-            athelete[i].position.copy(pos);
-            athelete[i].quaternion.copy(quat);
-
-        }
-    }
+				camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				//camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+				camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+				camera.lookAt( scene.position );
 
     renderer.render( scene, camera );
 }
@@ -260,7 +79,78 @@ function loop() {
 function loadSimpleMesh(){
   var loader = new THREE.JSONLoader();
   //loader.load( "models/hand_rig.js", addSimplMeshToScene );
-  loader.load( "models/athele_rig.json", addSimplMeshToScene );
+  loader.load( "models/biker.json", addSimplMeshToScene );
+}
+
+var mymaterials = [];
+
+function createMaterials(){
+
+var alpha = .1;
+var beta = .4;
+var gamma = .1;
+
+var specularShininess = Math.pow( 2, alpha * 10 );
+var specularColor = new THREE.Color( beta * 0.2, beta * 0.2, beta * 0.2 );
+//var diffuseColor = new THREE.Color().setHSL( alpha, 0.5, gamma * 0.5 * cnt ).multiplyScalar( 1 - beta * 0.2 );
+var diffuseColor1 = new THREE.Color(beta * 0.2, beta * 0.2, beta * 0.2);//.setHSL( alpha, 0.5, gamma * 0.5 * cnt ).multiplyScalar( 1 - beta * 0.2 );
+var material1 = new THREE.MeshPhongMaterial( {
+								color: diffuseColor1,
+								specular: specularColor,
+								reflectivity: beta,
+								shininess: specularShininess,
+								shading: THREE.SmoothShading,
+								envMap: null
+							} );
+mymaterials.push (material1);
+
+var diffuseColor2 = new THREE.Color("grey");
+var material2 = new THREE.MeshPhongMaterial( {
+								color: diffuseColor2,
+								specular: specularColor,
+								reflectivity: beta,
+								shininess: specularShininess,
+								shading: THREE.SmoothShading,
+								envMap: null
+							} );
+mymaterials.push (material2);
+
+var diffuseColor3 = new THREE.Color("black");
+var material3 = new THREE.MeshPhongMaterial( {
+								color: diffuseColor3,
+								specular: specularColor,
+								reflectivity: beta,
+								shininess: specularShininess,
+								shading: THREE.SmoothShading,
+								envMap: null
+							} );
+mymaterials.push (material3);
+
+
+	//mymaterials.push( new THREE.MeshLambertMaterial( { color: 0xdddddd, shading: THREE.FlatShading } ) );
+	//mymaterials.push( new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } ) );
+	//mymaterials.push( new THREE.MeshNormalMaterial( ) );
+	//mymaterials.push( new THREE.MeshBasicMaterial( { color: 0xffaa00, transparent: true, blending: THREE.AdditiveBlending } ) );
+	//mymaterials.push( new THREE.MeshBasicMaterial( { color: 0xff0000, blending: THREE.SubtractiveBlending } ) );
+
+	//mymaterials.push( new THREE.MeshLambertMaterial( { color: 0xdddddd, shading: THREE.SmoothShading } ) );
+	//mymaterials.push( new THREE.MeshNormalMaterial( { shading: THREE.SmoothShading } ) );
+	//mymaterials.push( new THREE.MeshBasicMaterial( { color: 0xffaa00, wireframe: false } ) );
+  //mymaterials.push( new THREE.MeshBasicMaterial( { color: 0xdddddd, wireframe: false } ) );
+
+	//mymaterials.push( new THREE.MeshDepthMaterial() );
+
+	//mymaterials.push( new THREE.MeshLambertMaterial( { color: "grey", emissive: 0xff0000, shading: THREE.SmoothShading } ) );
+  //mymaterials.push( new THREE.MeshLambertMaterial( { color: "cyan", emissive: 0xff0000, shading: THREE.SmoothShading } ) );
+  //mymaterials.push( new THREE.MeshLambertMaterial( { color: "black", emissive: 0xff0000, shading: THREE.SmoothShading } ) );
+
+	//mymaterials.push( new THREE.MeshPhongMaterial( { color: 0x000000, specular: 0x666666, emissive: 0xff0000, shininess: 10, shading: THREE.SmoothShading, opacity: 0.9, transparent: true } ) );
+
+
+
+  mymaterials.forEach (function (mat){
+    mat.skinning = true;
+  });
 }
 
 function addSimplMeshToScene ( model, materials ) {
@@ -270,14 +160,21 @@ function addSimplMeshToScene ( model, materials ) {
     mat.skinning = true;
   });
 
+createMaterials();
+  var multi = new THREE.MeshFaceMaterial (mymaterials);
   simpleMesh = new THREE.SkinnedMesh(
     model,
-    materials[0]
+    multi
   );
   //simpleMesh.scale.set(50,50,50);
   //simpleMesh.castShadow = true;
   //simpleMesh.receiveShadow = true;
-  simpleMesh.rotation.x = 90 * ToRad;
+  //simpleMesh.rotation.y = 180 * ToRad;
+  simpleMesh.castShadow = true;
+  simpleMesh.receiveShadow = false;
+
+  simpleMesh.rotation.x = 180 * ToRad;
+  //simpleMesh.rotation.y = 180 * ToRad;
 
   scene.add( simpleMesh );
 
@@ -288,58 +185,6 @@ function addSimplMeshToScene ( model, materials ) {
   simpleLoop();
 };
 
-function loadAtheleteMeshes(){
-  // Load the JSON files and provide callback functions (modelToScene
-  var loader = new THREE.JSONLoader();
-  loader.load( "models/body.js", addBodyToScene );
-  loader.load( "models/upperArm.L.js", addupperArmLToScene );
-  loader.load( "models/upperArm.R.js", addupperArmRToScene );
-  loader.load( "models/lowerArm.L.js", addlowerArmLToScene );
-  loader.load( "models/lowerArm.R.js", addlowerArmRToScene );
-  loader.load( "models/upperLeg.L.js", addupperLegLToScene );
-  loader.load( "models/upperLeg.R.js", addupperLegRToScene );
-  loader.load( "models/lowerLeg.L.js", addlowerLegLToScene );
-  loader.load( "models/lowerLeg.R.js", addlowerLegRToScene );
-}
-
-function addMeshToScene(mesh){
-    mesh.scale.set(500,500,500);
-    //mesh.matrixAutoUpdate = false;
-    // mesh.rotation.set(new THREE.Vector3( 0, 0, Math.PI / 2));
-    //mesh.rotation.y = Math.PI / 2;
-    //mesh.rotation.x = Math.PI / 4;
-    scene.add( mesh );
-    // increment the body_parts
-    body_part_cnt++;
-    // Check if we are good to good
-    isAtheleteLoaded();
-}
-
-function simpleSetup(){
-    scene = new THREE.Scene();
-
-    // Setup the camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 50;
-    camera.position.y = 0;
-
-    // Setup the renderer
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Add the lights
-    var ambientLight = new THREE.AmbientLight(0xFFFFFF);
-    scene.add(ambientLight);
-
-    light = new THREE.PointLight( 0xFFFFFF00 );
-    light.position.set( -15, 10, 15 );
-    scene.add( light );
-
-    var axisHelper = new THREE.AxisHelper( 50 );
-    scene.add( axisHelper );
-}
-
 function advancedSetup(){
     // Setup a new scene
     scene = new THREE.Scene();
@@ -349,7 +194,9 @@ function advancedSetup(){
     initCamera(0, -1,-5);
 
     // lights
+
     scene.add( new THREE.AmbientLight( 0x3D4143 ) );
+    /*
     light = new THREE.DirectionalLight( 0xffffff , 1);
     light.position.set( 300, 1000, 500 );
     light.target.position.set( 0, 0, 0 );
@@ -362,20 +209,34 @@ function advancedSetup(){
     //light.shadowCameraVisible = true;
     light.shadowMapWidth = light.shadowMapHeight = 1024;
     scene.add( light );
+    */
 
-    // background
-    var buffgeoBack = new THREE.BufferGeometry();
-    buffgeoBack.fromGeometry( new THREE.IcosahedronGeometry(8000,1) );
-    var back = new THREE.Mesh( buffgeoBack, new THREE.MeshBasicMaterial( { map:gradTexture([[1,0.75,0.5,0.25], ['#1B1D1E','#3D4143','#72797D', '#b0babf']]), side:THREE.BackSide, depthWrite: false }  ));
-    back.geometry.applyMatrix(new THREE.Matrix4().makeRotationZ(15*ToRad));
-    scene.add( back );
+    var dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+  dirLight.color.setHSL( 0.1, 1, 0.95 );
+  dirLight.position.set( -1, 1.75, 1 );
+  dirLight.position.multiplyScalar( 50 );
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  var d = 50;
+  dirLight.shadow.camera.left = -d;
+  dirLight.shadow.camera.right = d;
+  dirLight.shadow.camera.top = d;
+  dirLight.shadow.camera.bottom = -d;
+  dirLight.shadow.camera.far = 3500;
+  dirLight.shadow.bias = -0.0001;
+  scene.add( dirLight );
+
+
 
     // three renderer
     renderer = new THREE.WebGLRenderer({precision: "mediump", antialias:true, alpha: true});
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.autoClear = false;
-    renderer.shadowMapEnabled = true;
-    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.gammaInput = true;
+    renderer.gammaOutput = true;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.renderReverseSided = false;
+    renderer.setClearColor(new THREE.Color("cyan"));
 
     var axisHelper = new THREE.AxisHelper( 500 );
     scene.add( axisHelper );
@@ -632,3 +493,183 @@ function addlowerLegRToScene ( geometry, materials ) {
     addMeshToScene ( athelete[body_parts.lowerLegR] );
 
 };
+
+function moveHim(){
+  var mtx, mtx2;
+  mtx = new THREE.Matrix4();
+  var pos = new THREE.Vector3();
+  var quat = new THREE.Quaternion();
+
+  var loc = 1;
+  if (bAngle){
+    loc *= -1;
+    bAngle = false;
+  }else{
+    bAngle = true;
+  }
+
+  mtx.makeTranslation( 1, loc, 1);
+  mtx2 = new THREE.Matrix4();
+  //mtx2.makeRotationY(90*ToRad);
+  //mtx.multiply( mtx2 );
+  var angle0 = Math.cos (loopCnt);// * ToRad;
+  var angle1 = Math.sin (loopCnt);
+  loopCnt += .1;
+  /*if (bAngle){
+    angle0 = 90 * ToRad;
+    bAngle = false;
+  }else{
+    angle0 = 1 * ToRad;
+    bAngle = true;
+  }*/
+
+  mtx2.makeRotationX(angle0);
+  mtx.multiply( mtx2 );
+
+  pos.setFromMatrixPosition( mtx );
+  quat.setFromRotationMatrix( mtx );
+  //simpleMesh.position.copy(pos);
+  //simpleMesh.bones[0].quaternion.copy(quat);
+
+  //var xAxis = new THREE.Vector3(1,0,0);
+  //rotateAroundWorldAxis(mesh, xAxis, Math.PI / 180);
+
+  //helper.bones[16].position.copy(pos);
+  //helper.bones[10].quaternion.copy(quat);
+  var arm = getBone ('upper_arm.R');
+  var leg = getBone ('thigh.L');
+  if (arm != null){
+      arm.rotation.setFromRotationMatrix(mtx);
+      leg.rotation.setFromRotationMatrix(mtx);
+      helper.update ();
+  }
+
+  mtx2 = new THREE.Matrix4();
+  mtx.makeTranslation( 1, loc, 1);
+  mtx2.makeRotationX(angle1);
+  mtx.multiply( mtx2 );
+  arm = getBone ('upper_arm.L');
+  leg = getBone ('thigh.R');
+  if (arm != null){
+      arm.rotation.setFromRotationMatrix(mtx);
+      leg.rotation.setFromRotationMatrix(mtx);
+      helper.update ();
+  }
+}
+
+function getBone (name){
+    for (var i = 0, len = helper.bones.length; i < len; i++) {
+        if (helper.bones[i].name == name){
+            return helper.bones[i];
+        }
+    }
+    return null;
+}
+
+// Rotate an object around an arbitrary axis in object space
+var rotObjectMatrix;
+function rotateAroundObjectAxis(object, axis, radians) {
+    rotObjectMatrix = new THREE.Matrix4();
+    rotObjectMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    // object.matrix.multiplySelf(rotObjectMatrix);      // post-multiply
+    // new code for Three.JS r55+:
+    object.matrix.multiply(rotObjectMatrix);
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js r50-r58:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // new code for Three.js r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
+}
+
+var rotWorldMatrix;
+// Rotate an object around an arbitrary axis in world space
+function rotateAroundWorldAxis(object, axis, radians) {
+    rotWorldMatrix = new THREE.Matrix4();
+    rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+
+    // old code for Three.JS pre r54:
+    //  rotWorldMatrix.multiply(object.matrix);
+    // new code for Three.JS r55+:
+    rotWorldMatrix.multiply(object.matrix);                // pre-multiply
+
+    object.matrix = rotWorldMatrix;
+
+    // old code for Three.js pre r49:
+    // object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+    // old code for Three.js pre r59:
+    // object.rotation.setEulerFromRotationMatrix(object.matrix);
+    // code for r59+:
+    object.rotation.setFromRotationMatrix(object.matrix);
+}
+function loop() {
+    requestAnimationFrame( loop );
+
+   var mtx, mtx2;
+    var pos = new THREE.Vector3(), quat = new THREE.Quaternion();
+
+    if( body_part_cnt == total_body_parts ){
+        for (var i = 0; i < body_part_cnt; i++){
+            mtx = new THREE.Matrix4();
+
+            if (i == body_parts.upperLegR){
+                mtx.makeTranslation( 140, 20, 0);
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationY(90*ToRad);
+                mtx.multiply( mtx2 );
+
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationX(-33*ToRad);
+                mtx.multiply( mtx2 );
+            }else if(i == body_parts.lowerLegR){
+                mtx.makeTranslation( 15, 5, 0);
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationY(90*ToRad);
+                mtx.multiply( mtx2 );
+
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationX(30*ToRad);
+                mtx.multiply( mtx2 );
+            }else if(i == body_parts.lowerArmR){
+                mtx.makeTranslation( 15, 5, 0);
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationY(90*ToRad);
+                mtx.multiply( mtx2 );
+
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationX(-180*ToRad);
+                mtx.multiply( mtx2 );
+            }else if(i == body_parts.upperArmR){
+                mtx.makeTranslation( 15, 5, 0);
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationY(90*ToRad);
+                mtx.multiply( mtx2 );
+
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationX(-180*ToRad);
+                mtx.multiply( mtx2 );
+            }else{
+                mtx.makeTranslation( 0, 0, 0);
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationY(90*ToRad);
+                mtx.multiply( mtx2 );
+
+                mtx2 = new THREE.Matrix4();
+                mtx2.makeRotationX(10*ToRad);
+                mtx.multiply( mtx2 );
+            }
+
+            pos.setFromMatrixPosition( mtx );
+            quat.setFromRotationMatrix( mtx );
+
+            athelete[i].position.copy(pos);
+            athelete[i].quaternion.copy(quat);
+
+        }
+    }
+
+    renderer.render( scene, camera );
+}
